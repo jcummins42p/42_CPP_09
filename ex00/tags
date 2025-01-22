@@ -1,0 +1,35 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BITCOINEXCHANGE_HPP	BitcoinExchange.hpp	14;"	d
+BitcoinExchange	BitcoinExchange.cpp	/^BitcoinExchange::BitcoinExchange( const BitcoinExchange& other ) {$/;"	f	class:BitcoinExchange
+BitcoinExchange	BitcoinExchange.cpp	/^BitcoinExchange::BitcoinExchange( const char *data ) {$/;"	f	class:BitcoinExchange
+BitcoinExchange	BitcoinExchange.hpp	/^class	BitcoinExchange$/;"	c
+CENTS_IN_DOLLAR	BitcoinExchange.hpp	25;"	d
+CSVdatabase	BitcoinExchange.hpp	/^typedef std::map<time_t, t_cents> CSVdatabase;$/;"	t
+CSVrecord	BitcoinExchange.hpp	/^typedef std::pair<time_t, t_cents> CSVrecord;$/;"	t
+CXX	Makefile	/^CXX = c++$/;"	m
+CXXFLAGSS	Makefile	/^CXXFLAGSS = -g -Werror -Wextra -Wall -pedantic -std=c++98$/;"	m
+HEADS	Makefile	/^HEADS = BitcoinExchange.hpp$/;"	m
+NAME	Makefile	/^NAME = btc$/;"	m
+OBJS	Makefile	/^OBJS = $(SRCS:%.cpp=%.o)$/;"	m
+SRCS	Makefile	/^SRCS = main.cpp BitcoinExchange.cpp$/;"	m
+checkDateValidity	BitcoinExchange.cpp	/^static void checkDateValidity( int year, int month, int day ) {$/;"	f	file:
+data	BitcoinExchange.hpp	/^		CSVdatabase	data;$/;"	m	class:BitcoinExchange
+dateStringToTimestamp	BitcoinExchange.cpp	/^time_t BitcoinExchange::dateStringToTimestamp( std::string date ) const {$/;"	f	class:BitcoinExchange
+getNearestRecord	BitcoinExchange.cpp	/^CSVdatabase::const_iterator BitcoinExchange::getNearestRecord( const time_t &date ) const{$/;"	f	class:BitcoinExchange
+getPriceByDate	BitcoinExchange.cpp	/^t_cents BitcoinExchange::getPriceByDate( std::string date ) const {$/;"	f	class:BitcoinExchange
+initTimeStruct	BitcoinExchange.cpp	/^static void initTimeStruct( struct tm *input ) {$/;"	f	file:
+main	main.cpp	/^int main( int argc, char *argv[] ) {$/;"	f
+operator =	BitcoinExchange.cpp	/^BitcoinExchange &BitcoinExchange::operator=( const BitcoinExchange& other ) {$/;"	f	class:BitcoinExchange
+parseDataLine	BitcoinExchange.cpp	/^void 	BitcoinExchange::parseDataLine( std::string line ) {$/;"	f	class:BitcoinExchange
+printCSVData	BitcoinExchange.cpp	/^void BitcoinExchange::printCSVData( void ) const {$/;"	f	class:BitcoinExchange
+printDollars	BitcoinExchange.cpp	/^std::string BitcoinExchange::printDollars( t_cents amount ) const {$/;"	f	class:BitcoinExchange
+printTimestamp	BitcoinExchange.cpp	/^static std::string printTimestamp( const time_t &time ) {$/;"	f	file:
+processInput	BitcoinExchange.cpp	/^void BitcoinExchange::processInput( std::string line ) const {$/;"	f	class:BitcoinExchange
+stringToCents	BitcoinExchange.cpp	/^static t_cents stringToCents( std::string amount ) {$/;"	f	file:
+t_cents	BitcoinExchange.hpp	/^typedef unsigned int t_cents;$/;"	t
+~BitcoinExchange	BitcoinExchange.cpp	/^BitcoinExchange::~BitcoinExchange( void ) {}$/;"	f	class:BitcoinExchange
