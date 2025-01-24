@@ -6,22 +6,22 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/21 16:32:41 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/24 18:26:21 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PMERGEME_HPP
 # define PMERGEME_HPP
 
-# define JACOBSTAHL_SIZE 20
+# define JACOBSTAHL_SIZE 10
 
 # include <algorithm>
 # include <cstdlib>
 # include <iostream>
-# include <list>
 # include <limits.h>
 # include <sstream>
 # include <vector>
+# include <deque>
 
 class	PmergeMe
 {
@@ -32,16 +32,20 @@ class	PmergeMe
 		~PmergeMe	( void );
 
 		void printContainers( void ) const;
+		void printJacobsthal( void ) const;
 		void parseInput( int argc, char *argv[] );
-		void generateJacobstahlSequence( unsigned int n );
+		void generateJacobsthalSequenceNew( unsigned int n );
+
 	private:
 		std::vector<unsigned int> unsortedVector;
 		std::vector<unsigned int> sortedVector;
-		std::list<unsigned int> unsortedList;
-		std::list<unsigned int> sortedList;
+		std::deque<unsigned int> unsortedDeque;
+		std::deque<unsigned int> sortedDeque;
 
-		//	store generated jacobstahl sequence
-		std::vector<unsigned long> jacobstahl;
+		unsigned int vector_comparisons;
+		unsigned int deque_comparisons;
+		//	store generated jacobsthal sequence
+		std::vector<unsigned long> jacobsthalnew;
 } ;
 
 #endif
