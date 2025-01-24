@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/24 20:05:36 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/24 20:09:50 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,9 +128,9 @@ static unsigned int recursiveBinaryInsert(Container &sorted, typename Container:
 	}
 	typename Container::iterator	M = L + (R - L) / 2;
 	if (value < *M)
-		comparisons = recursiveBinaryInsert(sorted, L, M, value);
+		comparisons = comparisons + recursiveBinaryInsert(sorted, L, M, value);
 	else
-		comparisons = recursiveBinaryInsert(sorted, M + 1, R, value);
+		comparisons = comparisons + recursiveBinaryInsert(sorted, M + 1, R, value);
 	return (comparisons);
 }
 
@@ -146,7 +146,7 @@ Container mergeInsertionSort( Container container ) {
 	//unsigned int n_pairs = container.size() / 2;
 	long straggler = -1;
 
-	binaryInsert(container, container.begin(), container.end() - 1, static_cast<unsigned int>(0));
+	unsigned int comparisons = binaryInsert(container, container.begin(), container.end() - 1, static_cast<unsigned int>(0));
 	if (container.size() % 2)
 		straggler = container.back();
 	Container a_chain;
@@ -163,6 +163,7 @@ Container mergeInsertionSort( Container container ) {
 	//std::cout << "B chain: ";
 	std::cout << "Container: ";
 	printContainer(container);
+	std::cout << "Binary insert took " << comparisons << " comparisons" << std::endl;
 	//printStraggler(straggler);
 	return (a_chain);
 }
