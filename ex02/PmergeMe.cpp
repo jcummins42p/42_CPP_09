@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/27 15:54:22 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:53:11 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,15 +180,12 @@ template <typename Container>
 unsigned int mergeInsertionSort( Container &container, const unsigned int pair_size ) {
 	unsigned int comparisons = 0;
 
-	std::cout << "Pair size " << pair_size << ":" << std::endl
-				<< "\tBefore:\t";
-	printContainer(container);
 	if (pair_size > container.size() / 2)
 		return (comparisons);
 	for (unsigned int i = 0; i + (2 * pair_size) < container.size(); i += 2 * pair_size) {
 		comparisons += comparePairs(container, i, pair_size);	// makes and executes comparisons
 	}
-	std::cout << "\tAfter:\t";
+	std::cout << "After pair size " << pair_size << ":" << std::endl;
    	printContainer(container);
 	comparisons += mergeInsertionSort(container, pair_size * 2);
 	return (comparisons);
@@ -201,8 +198,10 @@ void PmergeMe::parseInput( int argc, char *argv[] ) {
 		addNumberToContainer( unsortedVector, argv[i] );
 		addNumberToContainer( unsortedDeque, argv[i] );
 	}
+	std::cout << "Before sort: " << std::endl;
+	printContainer(unsortedVector);
 	vector_comparisons = mergeInsertionSort( unsortedVector, 1 );
 	std::cout << "No comparisons: " << vector_comparisons << std::endl;
-	deque_comparisons = mergeInsertionSort( unsortedDeque, 1 );
-	std::cout << "No comparisons: " << deque_comparisons << std::endl;
+	//deque_comparisons = mergeInsertionSort( unsortedDeque, 1 );
+	//std::cout << "No comparisons: " << deque_comparisons << std::endl;
 }

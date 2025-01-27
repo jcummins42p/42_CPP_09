@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/20 15:18:52 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 17:57:35 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 #include <iostream>
 
 int main(int argc, char *argv[]) {
+	RPN rpn = RPN();
 	try {
-		RPN rpn = RPN(argc - 1, argv + 1);
+		rpn.processInput(argc - 1, std::string(argv[1]));
+		rpn.processInput(1, "1 2 3 4 5 + + + -");
 	}
 	catch ( std::exception &e ) {
 		std::cerr << "Error: " << e.what() << std::endl;

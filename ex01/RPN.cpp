@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/20 15:30:18 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 17:57:12 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,23 @@ void RPN::selectOperation( char operation ) {
 		numbers.top() = numbers.top() - lastval;
 	else if (operation == '*')
 		numbers.top() = numbers.top() * lastval;
-	else if (operation == '/')
+	else if (operation == '/') {
+		if (lastval == 0)
+			throw std::runtime_error("Divide by zero error");
 		numbers.top() = numbers.top() / lastval;
+	}
 	else
 		throw std::runtime_error("Invalid operator in selectOperation function");
 }
 
-void RPN::processArgument( std::string arg ) {
-	if (arg.length() != 1)
-		throw std::invalid_argument(arg + ": Argument length exceeded");
+void RPN::processArgument( const std::string &arg ) {
+	if (arg.empty())
+		return;
+	int toadd = atol(arg.c_str());
+	if (toadd > 9 || toadd < -9)
+		throw std::invalid_argument("Single digit numbers only");
 	else if (isdigit(arg[0])) {
-		std::cout << "Adding " << arg << " to nubmers stack" << std::endl;
+		std::cout << "Adding " << arg << " to numbers stack" << std::endl;
 		numbers.push(atol(arg.c_str()));
 	}
 	else if (isValidOperator(arg[0]))
@@ -52,17 +58,18 @@ void RPN::processArgument( std::string arg ) {
 		throw std::invalid_argument(arg + ": Invalid character detected");
 }
 
-void RPN::displayResult( void ) {
+void RPN::displayResult( void ) const {
 	if (numbers.size() > 1)
 		throw std::runtime_error("Insufficient operators for operands");
-	std::cout << numbers.top();
+	std::cout << numbers.top() << std::endl;
 }
 
-RPN::RPN( int argc, char *argv[] ) {
+RPN::RPN( void ) {}
+
+void RPN::processInput( int argc, std::string arg ) {
 	if (argc < 1)
 		throw std::invalid_argument("No arguments supplied");
 	if (argc == 1) {
-		std::string			arg = std::string(argv[0]);
 		std::stringstream	argstream(arg);
 		while (getline(argstream, arg, ' '))
 			processArgument(arg);
@@ -71,6 +78,7 @@ RPN::RPN( int argc, char *argv[] ) {
 		throw std::invalid_argument("Use enclosing \"quotations\", not separate args");
 	}
 	displayResult();
+	numbers.pop();	//	remove the last element so the object can be used again
 }
 
 RPN::RPN( const RPN& other )
