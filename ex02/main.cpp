@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/27 16:55:10 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 19:45:06 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,9 @@
 int	main( int argc, char *argv[] ) {
 	try {
 		PmergeMe sorter = PmergeMe();
+		sorter.printContainerByString( "jacob" );
 		sorter.parseInput(argc - 1, argv + 1);
+		sorter.mergeInsertionSort( "vector" );
 	}
 	catch ( std::exception &e ) {
 		std::cerr << "Error: " << e.what() << std::endl;

@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/27 16:53:11 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 21:05:04 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 PmergeMe::PmergeMe( void ) :
 	vector_comparisons(0),
 	deque_comparisons(0) {
-	generateJacobsthalSequenceNew( JACOBSTAHL_SIZE );
+	generateJacobsthalSequence( JACOBSTAHL_SIZE );
 }
 
 PmergeMe::PmergeMe( const PmergeMe& other ) {
@@ -26,10 +26,8 @@ PmergeMe::PmergeMe( const PmergeMe& other ) {
 PmergeMe &PmergeMe::operator=( const PmergeMe& other ) {
 	if (this != &other)
 	{
-		this->unsortedVector = other.unsortedVector;
-		this->sortedVector = other.sortedVector;
-		this->unsortedDeque = other.unsortedDeque;
-		this->sortedDeque = other.sortedDeque;
+		this->vector_numbers = other.vector_numbers;
+		this->deque_numbers = other.deque_numbers;
 	}
 	return *this;
 }
@@ -38,29 +36,35 @@ PmergeMe &PmergeMe::operator=( const PmergeMe& other ) {
 PmergeMe::~PmergeMe( void ) {}
 
 template <typename T>
-static void printContainer( const T &container ) {
+static void printContainer( const T &container, unsigned int grouping) {
+	if (grouping % 2)
+		grouping = 0;
 	if (container.size() == 0) {
 		std::cout << "Container is empty" << std::endl;
 		return;
 	}
 	typename T::const_iterator it = container.begin();
+	if (grouping)
+		std::cout << "(";
 	std::cout << *it++;
-	while (it != container.end())
-		std::cout << ", " << *it++;
+	int i = 1;
+	while (it != container.end()) {
+		if (grouping && (i++ % grouping == 0))
+			std::cout << ")(" << *it++;
+		else
+			std::cout << ", " << *it++;
+	}
 	std::cout << std::endl;
 }
 
-void PmergeMe::printContainerByString( const std::string &select ) {
-	if (select == "uvector")
-		printContainer( unsortedVector );
-	else if (select == "udeque")
-		printContainer( unsortedDeque );
-	else if (select == "sdeque")
-		printContainer( sortedDeque );
-	else if (select == "sdeque")
-		printContainer( sortedDeque );
+void PmergeMe::printContainerByString( const std::string &select ) const {
+	//std::cout << "Printing " << select << ": " << std::endl;
+	if (select == "vector")
+		printContainer( vector_numbers, 0 );
+	else if (select == "deque")
+		printContainer( deque_numbers, 0 );
 	else if (select == "jacob")
-		printContainer( jacobsthalnew );
+		printContainer( jacobsthal, 0 );
 }
 
 static bool argAllDigits( char *arg ) {
@@ -96,17 +100,16 @@ static void addNumberToContainer( T &container, char *arg ) {
 	arg_n++;
 }
 
-void PmergeMe::generateJacobsthalSequenceNew( unsigned int n ) {
-	if (jacobsthalnew.size())
-		jacobsthalnew.clear();
-	unsigned long i = 0;
+//	we only need the numbers starting from '3' in the sequence
+void PmergeMe::generateJacobsthalSequence( unsigned int n ) {
+	if (jacobsthal.size())
+		jacobsthal.clear();
+	unsigned long i = 1;
 	unsigned long j = 1;
-	jacobsthalnew.push_back(i);
-	jacobsthalnew.push_back(j);
 	for (unsigned int k = 2; k < n; k++) {
-		jacobsthalnew.push_back(i * 2 + j);
+		jacobsthal.push_back(i * 2 + j);
 		i = j;
-		j = jacobsthalnew.back();
+		j = jacobsthal.back();
 	}
 }
 
@@ -142,7 +145,7 @@ static unsigned int binaryInsert(
 		const T &value)
 {	//	Just a wrapper function for the recursive, to print debug message once
 	std::cout << "Doing binary insert of value " << value << " in container ";
-	printContainer(sorted);
+	printContainer(sorted, 0);
 	return recursiveBinaryInsert(sorted, L, R, value);
 }
 
@@ -174,34 +177,43 @@ static int comparePairs(
 	return (1);
 }
 
-//	Need to keep track of recursion level to dictate size of sort elements (element_size)
-//	element size starts by sorting pairs (1 element size) and doubles with each recursion call
 template <typename Container>
-unsigned int mergeInsertionSort( Container &container, const unsigned int pair_size ) {
+static unsigned int pairSort( Container &container, const unsigned int pair_size ) {
 	unsigned int comparisons = 0;
 
 	if (pair_size > container.size() / 2)
 		return (comparisons);
-	for (unsigned int i = 0; i + (2 * pair_size) < container.size(); i += 2 * pair_size) {
+	for (unsigned int i = 0; i + (2 * pair_size) <= container.size(); i += 2 * pair_size) {
 		comparisons += comparePairs(container, i, pair_size);	// makes and executes comparisons
 	}
-	std::cout << "After pair size " << pair_size << ":" << std::endl;
-   	printContainer(container);
-	comparisons += mergeInsertionSort(container, pair_size * 2);
+	std::cout << "After pair sort (size " << pair_size << "):" << std::endl;
+   	printContainer(container, pair_size * 2);
+	comparisons += pairSort(container, pair_size * 2);
 	return (comparisons);
+}
+
+//	Need to keep track of recursion level to dictate size of sort elements (element_size)
+//	element size starts by sorting pairs (1 element size) and doubles with each recursion call
+void PmergeMe::mergeInsertionSort( const std::string &select )
+{
+	std::cout << "Attempting to sort " << select << std::endl
+			<< "Before Sort: " << std::endl;
+	printContainerByString( select );
+	if (select == "vector")
+		vector_comparisons = pairSort(vector_numbers, PAIRSORT_INIT);
+	else if (select == "deque")
+		deque_comparisons = pairSort(deque_numbers, PAIRSORT_INIT);
+	else {
+		std::cout << "\tInvalid container name" << std::endl;
+		return;
+	}
 }
 
 void PmergeMe::parseInput( int argc, char *argv[] ) {
 	if (!argc)
 		throw std::invalid_argument("No input");
 	for (int i = 0; i < argc; i++) {
-		addNumberToContainer( unsortedVector, argv[i] );
-		addNumberToContainer( unsortedDeque, argv[i] );
+		addNumberToContainer( vector_numbers, argv[i] );
+		addNumberToContainer( deque_numbers, argv[i] );
 	}
-	std::cout << "Before sort: " << std::endl;
-	printContainer(unsortedVector);
-	vector_comparisons = mergeInsertionSort( unsortedVector, 1 );
-	std::cout << "No comparisons: " << vector_comparisons << std::endl;
-	//deque_comparisons = mergeInsertionSort( unsortedDeque, 1 );
-	//std::cout << "No comparisons: " << deque_comparisons << std::endl;
 }

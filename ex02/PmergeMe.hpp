@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/27 14:05:59 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 19:47:43 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define PMERGEME_HPP
 
 # define JACOBSTAHL_SIZE 10
+# define PAIRSORT_INIT 1
 
 # include <algorithm>
 # include <cstdlib>
@@ -31,21 +32,19 @@ class	PmergeMe
 		PmergeMe	&operator=( const PmergeMe &other );
 		~PmergeMe	( void );
 
-		void printContainerByString( const std::string &select );
-		void printJacobsthal( void ) const;
+		void printContainerByString( const std::string &select ) const;
 		void parseInput( int argc, char *argv[] );
-		void generateJacobsthalSequenceNew( unsigned int n );
+		void generateJacobsthalSequence( unsigned int n );
+		void mergeInsertionSort( const std::string &select );
 
 	private:
-		std::vector<unsigned int> unsortedVector;
-		std::vector<unsigned int> sortedVector;
-		std::deque<unsigned int> unsortedDeque;
-		std::deque<unsigned int> sortedDeque;
+		std::vector<unsigned int> vector_numbers;
+		std::deque<unsigned int> deque_numbers;
 
 		unsigned int vector_comparisons;
 		unsigned int deque_comparisons;
 		//	store generated jacobsthal sequence
-		std::vector<unsigned long> jacobsthalnew;
+		std::vector<unsigned long> jacobsthal;
 } ;
 
 #endif
