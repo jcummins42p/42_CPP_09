@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/20 12:55:07 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 10:49:01 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ static int daysInMonth( int month, int year ) {
 
 //	Why is month 0-indexed and day is 1-indexed? Weird.
 static void checkDateValidity( int year, int month, int day ) {
-	std::cout << "Checking " << year << "-" << month << "-" << day << std::endl;
+	//std::cout << "Checking " << year << "-" << month << "-" << day << std::endl;
 	if (year < 0)
 		throw std::invalid_argument("Invalid year: ");
 	else if (day < 1 || day > daysInMonth(month, year))

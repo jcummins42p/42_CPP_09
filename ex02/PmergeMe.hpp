@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/24 18:26:21 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/27 14:05:59 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ class	PmergeMe
 		PmergeMe	&operator=( const PmergeMe &other );
 		~PmergeMe	( void );
 
-		void printContainers( void ) const;
+		void printContainerByString( const std::string &select );
 		void printJacobsthal( void ) const;
 		void parseInput( int argc, char *argv[] );
 		void generateJacobsthalSequenceNew( unsigned int n );
