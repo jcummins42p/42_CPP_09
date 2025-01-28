@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/27 21:05:04 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/28 21:29:10 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,18 @@ static void printContainer( const T &container, unsigned int grouping) {
 	std::cout << *it++;
 	int i = 1;
 	while (it != container.end()) {
-		if (grouping && (i++ % grouping == 0))
-			std::cout << ")(" << *it++;
+		if (grouping && (i % grouping == 0))
+			std::cout << ")  (" << *it++;
+		else if (grouping && (i % (grouping / 2) == 0))
+			std::cout << " ~ " << *it++;
 		else
 			std::cout << ", " << *it++;
+		i++;
 	}
+	if (grouping && i % grouping == 0)
+		std::cout << ")";
+	else if (grouping)
+		std::cout << "...";
 	std::cout << std::endl;
 }
 
@@ -104,13 +111,12 @@ static void addNumberToContainer( T &container, char *arg ) {
 void PmergeMe::generateJacobsthalSequence( unsigned int n ) {
 	if (jacobsthal.size())
 		jacobsthal.clear();
-	unsigned long i = 1;
-	unsigned long j = 1;
-	for (unsigned int k = 2; k < n; k++) {
-		jacobsthal.push_back(i * 2 + j);
-		i = j;
-		j = jacobsthal.back();
-	}
+	for (unsigned int k = 2; k < n; k++)
+		jacobsthal.push_back(generateJacobsthalNumber(k));
+}
+
+unsigned int PmergeMe::generateJacobsthalNumber( unsigned int n ) {
+	return ((pow(2, n + 1) + pow(-1, n)) / 3);
 }
 
 // returns the number of comparisons made during the insert process
@@ -120,16 +126,13 @@ static unsigned int recursiveBinaryInsert(
 		Container &sorted,
 		typename Container::iterator L,
 		typename Container::iterator R,
-		const T &value)
+		T value)
 {
-	typename Container::iterator	M = L + (R - L) / 2;
+	typename Container::iterator	M = L + ((R - L) / 2);
 
 	if (L == R)	{	// Comparing iterators does not count towards comparison total
-		if (value < *L)
-			sorted.insert(L, value);	// This just indicates that the correct node is found
-		else
-			sorted.insert(L + 1, value);
-		return 1;
+		sorted.insert(R, value);
+		return 0;
 	}
 	if (value < *M)
 		return 1 + recursiveBinaryInsert(sorted, L, M, value);
@@ -137,6 +140,8 @@ static unsigned int recursiveBinaryInsert(
 		return 1 + recursiveBinaryInsert(sorted, M + 1, R, value);
 }
 
+//	This is a HALF OPEN binary insert, requiring a R iterator past the container end
+//	Mixing this with closed was causing issues with accuracy and number of comparisons
 template <typename Container, typename T>
 static unsigned int binaryInsert(
 		Container &sorted,
@@ -147,6 +152,15 @@ static unsigned int binaryInsert(
 	std::cout << "Doing binary insert of value " << value << " in container ";
 	printContainer(sorted, 0);
 	return recursiveBinaryInsert(sorted, L, R, value);
+}
+
+template <typename Container>
+static unsigned int insertionStep(Container &container, unsigned int recursion_level)
+{
+	unsigned int pair_size = pow(2, recursion_level);
+	unsigned int insert_comparisons = 0;
+	if (pair_size > container.size())
+		return (insert_comparisons);
 }
 
 template <typename Container>
@@ -161,9 +175,6 @@ static void swapPairs(
 		std::swap(container[index + i], container[comp + i]);
 }
 
-//	Pass the first index of first element, we can deduce the one to compare.
-//	Put tests here so that the function can be called without checks. Will always
-//	make one comparison, so always returns 1 to increment comparisons.
 template <typename Container>
 static int comparePairs(
 		Container &container,
@@ -178,35 +189,38 @@ static int comparePairs(
 }
 
 template <typename Container>
-static unsigned int pairSort( Container &container, const unsigned int pair_size ) {
+static unsigned int mergeInsertionSort( Container &container, const unsigned int recursion_level ) {
 	unsigned int comparisons = 0;
+	const unsigned int pair_size = pow(2, recursion_level);
 
-	if (pair_size > container.size() / 2)
+	if (pair_size > container.size())
 		return (comparisons);
-	for (unsigned int i = 0; i + (2 * pair_size) <= container.size(); i += 2 * pair_size) {
-		comparisons += comparePairs(container, i, pair_size);	// makes and executes comparisons
+	for (unsigned int i = 0; i + pair_size <= container.size(); i += pair_size) {
+		comparisons += comparePairs(container, i, pair_size / 2);	// makes and executes comparisons
 	}
-	std::cout << "After pair sort (size " << pair_size << "):" << std::endl;
-   	printContainer(container, pair_size * 2);
-	comparisons += pairSort(container, pair_size * 2);
+	std::cout << "> After Level " << recursion_level << " (pair sort - size " << pair_size << "):" << std::endl;
+   	printContainer(container, pair_size);
+	comparisons += mergeInsertionSort(container, recursion_level + 1);
+	insertionStep(container, recursion_level);
 	return (comparisons);
 }
 
 //	Need to keep track of recursion level to dictate size of sort elements (element_size)
 //	element size starts by sorting pairs (1 element size) and doubles with each recursion call
-void PmergeMe::mergeInsertionSort( const std::string &select )
+void PmergeMe::mergeInsertionWrapper( const std::string &select )
 {
 	std::cout << "Attempting to sort " << select << std::endl
 			<< "Before Sort: " << std::endl;
 	printContainerByString( select );
 	if (select == "vector")
-		vector_comparisons = pairSort(vector_numbers, PAIRSORT_INIT);
+		vector_comparisons = mergeInsertionSort(vector_numbers, 1);
 	else if (select == "deque")
-		deque_comparisons = pairSort(deque_numbers, PAIRSORT_INIT);
+		deque_comparisons = mergeInsertionSort(deque_numbers, 1);
 	else {
 		std::cout << "\tInvalid container name" << std::endl;
 		return;
 	}
+	std::cout << "Number of comparisons has been " << vector_comparisons << std::endl;
 }
 
 void PmergeMe::parseInput( int argc, char *argv[] ) {
