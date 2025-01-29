@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/28 19:30:45 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/29 15:30:54 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,12 @@ class	PmergeMe
 		void generateJacobsthalSequence( unsigned int n );
 		void mergeInsertionWrapper( const std::string &select );
 
-		static unsigned int generateJacobsthalNumber( unsigned int n );
+		static unsigned int genJacobsthal( int n );
 
 	private:
 		std::vector<unsigned int> vector_numbers;
 		std::deque<unsigned int> deque_numbers;
 
-		unsigned int vector_comparisons;
-		unsigned int deque_comparisons;
 		//	store generated jacobsthal sequence
 		std::vector<unsigned long> jacobsthal;
 } ;
