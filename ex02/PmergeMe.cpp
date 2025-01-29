@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/28 21:29:10 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/29 13:17:15 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,11 @@ PmergeMe &PmergeMe::operator=( const PmergeMe& other ) {
 
 //	destructor
 PmergeMe::~PmergeMe( void ) {}
+
+static void printRecursionLevel( unsigned int recursion_level, std::string stage ) {
+	std::cout << std::endl << "> After Level " << recursion_level
+		<< " (" << stage << " - size " << pow(2, recursion_level) << "):" << std::endl;
+}
 
 template <typename T>
 static void printContainer( const T &container, unsigned int grouping) {
@@ -154,17 +159,73 @@ static unsigned int binaryInsert(
 	return recursiveBinaryInsert(sorted, L, R, value);
 }
 
+//	just handles the insertion of an element in the existing container
 template <typename Container>
-static unsigned int insertionStep(Container &container, unsigned int recursion_level)
+static void insertElement(
+		Container &container,
+		typename Container::iterator src,
+		typename Container::iterator dst,
+		unsigned int elementSize)
 {
-	unsigned int pair_size = pow(2, recursion_level);
-	unsigned int insert_comparisons = 0;
-	if (pair_size > container.size())
-		return (insert_comparisons);
+	Container temp;
+	for (unsigned int i = 0; i < elementSize; i++) {
+		temp.push_back(*(src));
+		container.erase(src);
+	}
+	std::cout << "Created temporary container to move elements:";
+	printContainer(temp, 0);
+	for (unsigned int i = 0; i < elementSize; i++) {
+		container.insert(dst + i, temp[i]);
+	}
+}
+
+//	takes the element iterators and returns true if they need to be swapped
+template <typename Container>
+static bool compareElements(
+		typename Container::iterator src,
+		typename Container::iterator dst,
+		unsigned int elementSize )
+{
+	return ((*(src + elementSize - 1) < *(dst + elementSize - 1)) ? true : false);
 }
 
 template <typename Container>
-static void swapPairs(
+static unsigned int compareElementsInsert(Container &container, unsigned int elementSize)
+{
+	unsigned int comparisons = 0;
+	for (typename Container::iterator src = container.begin(); src + elementSize <= container.end(); src += elementSize)
+	{	//	'src' is the element to insert.
+		for (typename Container::iterator dst = container.begin(); dst < src; dst += elementSize)
+		{	//	'dst' is the element to target
+			if (src <= dst)	//	No point comparing against larger targets
+				continue;	//	Don't compare an element against srcs self. This doesn't count as a comparison
+			if (compareElements<Container>(src, dst, elementSize)) { //	Accessing the 'comparison number' of the
+				std::cout << "Inserting element ending " << *(src + elementSize - 1)
+					<< " before element ending " << *(dst + elementSize - 1) << std::endl;
+				insertElement(container, src, dst, elementSize);
+			}
+			comparisons++;
+		}
+	}
+	return (comparisons);
+}
+
+template <typename Container>
+static unsigned int insertionStep(Container &container, unsigned int recursion_level)
+{
+	unsigned int elementSize = pow(2, recursion_level);
+	unsigned int insert_comparisons = 0;
+	if (elementSize > container.size())
+		return (insert_comparisons);
+	//	implementation here
+	printRecursionLevel(recursion_level, "insertion");
+   	printContainer(container, elementSize);
+	insert_comparisons += compareElementsInsert(container, elementSize);
+	return (insert_comparisons);
+}
+
+template <typename Container>
+static void swapElements(
 		Container &container,
 		const unsigned int &index,
 		const unsigned int &comp)
@@ -176,32 +237,32 @@ static void swapPairs(
 }
 
 template <typename Container>
-static int comparePairs(
+static int compareElementsSwap(
 		Container &container,
 		const unsigned int &index,
-		const unsigned int &pair_size)
+		const unsigned int &elementSize)
 {
-	const unsigned int comp = index + pair_size;
+	const unsigned int comp = index + elementSize;
 	//	We need to compare the last element before the next index because that is already sorted
-	if (container[index + pair_size - 1] > container[comp + pair_size - 1])
-		swapPairs(container, index, comp);
+	if (container[index + elementSize - 1] > container[comp + elementSize - 1])
+		swapElements(container, index, comp);
 	return (1);
 }
 
 template <typename Container>
 static unsigned int mergeInsertionSort( Container &container, const unsigned int recursion_level ) {
 	unsigned int comparisons = 0;
-	const unsigned int pair_size = pow(2, recursion_level);
+	const unsigned int elementSize = pow(2, recursion_level);
 
-	if (pair_size > container.size())
+	if (elementSize > container.size())
 		return (comparisons);
-	for (unsigned int i = 0; i + pair_size <= container.size(); i += pair_size) {
-		comparisons += comparePairs(container, i, pair_size / 2);	// makes and executes comparisons
+	for (unsigned int i = 0; i + elementSize <= container.size(); i += elementSize) {
+		comparisons += compareElementsSwap(container, i, elementSize / 2);	// makes and executes comparisons
 	}
-	std::cout << "> After Level " << recursion_level << " (pair sort - size " << pair_size << "):" << std::endl;
-   	printContainer(container, pair_size);
+	printRecursionLevel( recursion_level, "pair sort" );
+   	printContainer(container, elementSize);
 	comparisons += mergeInsertionSort(container, recursion_level + 1);
-	insertionStep(container, recursion_level);
+	comparisons += insertionStep(container, recursion_level - 1);
 	return (comparisons);
 }
 
@@ -220,6 +281,7 @@ void PmergeMe::mergeInsertionWrapper( const std::string &select )
 		std::cout << "\tInvalid container name" << std::endl;
 		return;
 	}
+   	printContainerByString(select);
 	std::cout << "Number of comparisons has been " << vector_comparisons << std::endl;
 }
 
