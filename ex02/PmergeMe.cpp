@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/30 19:28:40 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/30 20:50:33 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,6 +181,21 @@ static Container createPend(Container &main, unsigned int e_size)
 	return (pend);
 }
 
+//	creates odd from all b elements starting b2
+template <typename Container>
+static Container createOdds(Container &main, unsigned int e_size)
+{
+	Container odd;
+	for (int i = 2; (i + 1) * e_size <= main.size(); i++) {
+		moveToContainerFromRange(main, odd, i * e_size, (i + 1) * e_size);
+	}
+	std::cout << "Created odd: ";
+	printContainer(odd, e_size);
+	std::cout << "New main: ";
+	printContainer(main, e_size);
+	return (odd);
+}
+
 //	just handles the insertion of an element in the existing container
 //	call this from the binary function when the destination index is found
 template <typename Container>
@@ -241,25 +256,27 @@ template <typename Container>
 static unsigned int insertionCycle(Container &main, unsigned int e_size)
 {
 	unsigned int comparisons = 0;
-	//unsigned int totalChunks = container.size() / e_size;
-	//unsigned int currJacobsthal = PmergeMe::genJacobsthal(0);
-	//unsigned int prevJacobsthal = PmergeMe::genJacobsthal(-1);
+	Container odds = createOdds(main, e_size);
 	Container pend = createPend(main, e_size);
 
-	//	ordered insertion following jacobstahl sequence
-	//for (unsigned int i = 0; currJacobsthal < totalChunks; i++) {
-		//while (currJacobsthal > prevJacobsthal) {
-			//if (currJacobsthal * e_size < pend.size()) {
-				//comparisons += binaryInsert(container, 0, src, e_size, src);
-////need to fix this								 								
-			//}
-			//currJacobsthal--;
-		//}
-		//prevJacobsthal = currJacobsthal;
-		//currJacobsthal = PmergeMe::genJacobsthal(i + 1);
-	//}
-	////	ordered insertion without jacobsthal sequence
-	for (unsigned int i = 0; i + e_size < pend.size(); i += e_size) {
+	std::cout << "Binary insert in jacobsthal order" << std::endl;
+	for (unsigned int i = 0; ; i++)
+	{
+		unsigned int currJacobsthal = PmergeMe::genJacobsthal(i);
+		unsigned int prevJacobsthal = PmergeMe::genJacobsthal(i - 1);
+		unsigned int target_index = pow(2, i + 2) * e_size;
+		std::cout << "Inserting between index 0 and " << target_area << ": ";
+		if (target_area > main.size())
+			target_area = main.size();
+		if ((currJacobsthal - 1) * e_size >= pend.size())
+			break;
+		while (currJacobsthal > prevJacobsthal) {
+			comparisons += binaryInsert(main, pend, 0, target_area, e_size, ((currJacobsthal - 1) * e_size)- e_size);
+			currJacobsthal--;
+		}
+	}
+	std::cout << "Binary insert in linear order" << std::endl;
+	for (unsigned int i = 0; i + e_size <= pend.size(); i += e_size) {
 		comparisons += binaryInsert(main, pend, 0, main.size(), e_size, i);
 	}
 	return (comparisons);
