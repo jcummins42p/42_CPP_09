@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/29 20:26:58 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/30 19:28:40 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,16 +168,16 @@ static Container newContainerFromRange(
 
 //	creates pend from all b elements starting b2
 template <typename Container>
-static Container createPend(Container &main, unsigned int elementSize)
+static Container createPend(Container &main, unsigned int e_size)
 {
 	Container pend;
-	for (int i = 2; (i + 1) * elementSize < main.size(); i++) {
-		moveToContainerFromRange(main, pend, i * elementSize, (i + 1) * elementSize);
+	for (int i = 2; (i + 1) * e_size <= main.size(); i++) {
+		moveToContainerFromRange(main, pend, i * e_size, (i + 1) * e_size);
 	}
 	std::cout << "Created pend: ";
-	printContainer(pend, elementSize);
+	printContainer(pend, e_size);
 	std::cout << "New main: ";
-	printContainer(main, elementSize);
+	printContainer(main, e_size);
 	return (pend);
 }
 
@@ -189,9 +189,9 @@ static void insertElement(
 		Container &source,
 		unsigned int target_i,
 		unsigned int source_i,
-		unsigned int elementSize)
+		unsigned int e_size)
 {
-	for (unsigned int i = 0; i < elementSize; i++) {
+	for (unsigned int i = 0; i < e_size; i++) {
 		target.insert(target.begin() + target_i + i, source[source_i + i]);
 	}
 }
@@ -199,66 +199,68 @@ static void insertElement(
 //	use this to compare elements in the binary insert function
 //	takes the element iterators and returns true if they need to be swapped
 template <typename Container>
-static bool compareElements(
-		const Container &main,
-		const Container &pend,
-		unsigned int src,
+static bool elementIsLessThan(
+		const Container &target,
+		const Container &source,
 		unsigned int dst,
-		unsigned int elementSize )
+		unsigned int src,
+		unsigned int e_size )
 {
-	return ((pend[src + elementSize - 1])
-			< (main[dst + elementSize - 1]) ? true : false);
+	if (target.empty() || source.empty())
+		return (false);
+	return (source[src + e_size - 1] < target[dst + e_size - 1]);
 }
 
 //	Write binary insertion sort that works with indices of element starts + element sizes
 template <typename Container>
-static unsigned int binaryElementInsert(
+static unsigned int binaryInsert(
 		Container &target,
 		Container &source,
 		unsigned int L,	// defining left and right bounds
 		unsigned int R,
-		unsigned int elementSize,
+		unsigned int e_size,
 		unsigned int src_i) // we don't yet have a dest - we are finding it
 {
 	unsigned int M = L + (R - L) / 2;
 
-	if (L == R || (M % elementSize)) {
-		std::cout << "Inserting element ending " << source[src + elementSize - 1]
-			<< " before element ending " << target[L + elementSize - 1] << std::endl;
-		insertElement(target, source, L, src_i, elementSize);
-		printContainer( container, elementSize);
+	M -= M % e_size; // take the lower index that aligns with the start of an element
+	if (L == R) {
+		std::cout << "Inserting element ending " << source[src_i + e_size - 1]
+			<< " before element ending " << target[L + e_size - 1] << std::endl;
+		insertElement(target, source, L, src_i, e_size);
+		printContainer( target, e_size);
 		return (0);
 	}
-	else if (compareElements(container, src_i, M, elementSize))
-		return 1 + binaryElementInsert(container, L, M, elementSize, src_i);
+	else if (elementIsLessThan(target, source, M, src_i, e_size))
+		return 1 + binaryInsert(target, source, L, M, e_size, src_i);
 	else
-		return 1 + binaryElementInsert(container, M + elementSize, R, elementSize, src_i);
+		return 1 + binaryInsert(target, source, M + e_size, R, e_size, src_i);
 }
 
 template <typename Container>
-static unsigned int compareElementsInsert(Container &container, unsigned int elementSize)
+static unsigned int insertionCycle(Container &main, unsigned int e_size)
 {
 	unsigned int comparisons = 0;
-	unsigned int totalChunks = container.size() / elementSize;
-	unsigned int currJacobsthal = PmergeMe::genJacobsthal(0);
-	unsigned int prevJacobsthal = PmergeMe::genJacobsthal(-1);
-	Container pend = createPend(container, elementSize);
+	//unsigned int totalChunks = container.size() / e_size;
+	//unsigned int currJacobsthal = PmergeMe::genJacobsthal(0);
+	//unsigned int prevJacobsthal = PmergeMe::genJacobsthal(-1);
+	Container pend = createPend(main, e_size);
 
 	//	ordered insertion following jacobstahl sequence
-	for (unsigned int i = 0; currJacobsthal < totalChunks; i++) {
-		while (currJacobsthal > prevJacobsthal) {
-			if (currJacobsthal * elementSize < pend.size()) {
-				comparisons += binaryElementInsert(container, 0, src, elementSize, src);
-//need to fix this								 								
-			}
-			currJacobsthal--;
-		}
-		prevJacobsthal = currJacobsthal;
-		currJacobsthal = PmergeMe::genJacobsthal(i + 1);
-	}
-	//	ordered insertion without jacobsthal sequence
-	while (!pend.empty()) {
-		binaryElementInsert(container, 0, src, elementsSize, src);
+	//for (unsigned int i = 0; currJacobsthal < totalChunks; i++) {
+		//while (currJacobsthal > prevJacobsthal) {
+			//if (currJacobsthal * e_size < pend.size()) {
+				//comparisons += binaryInsert(container, 0, src, e_size, src);
+////need to fix this								 								
+			//}
+			//currJacobsthal--;
+		//}
+		//prevJacobsthal = currJacobsthal;
+		//currJacobsthal = PmergeMe::genJacobsthal(i + 1);
+	//}
+	////	ordered insertion without jacobsthal sequence
+	for (unsigned int i = 0; i + e_size < pend.size(); i += e_size) {
+		comparisons += binaryInsert(main, pend, 0, main.size(), e_size, i);
 	}
 	return (comparisons);
 }
@@ -266,13 +268,13 @@ static unsigned int compareElementsInsert(Container &container, unsigned int ele
 template <typename Container>
 static unsigned int insertionStep(Container &container, unsigned int recursion_level)
 {
-	unsigned int elementSize = pow(2, recursion_level);
+	unsigned int e_size = pow(2, recursion_level);
 	unsigned int insert_comparisons = 0;
-	if (elementSize > container.size())
+	if (e_size > container.size())
 		return (insert_comparisons);
 	printRecursionLevel(recursion_level, "insertion");
-   	printContainer(container, elementSize);
-	insert_comparisons += compareElementsInsert(container, elementSize);
+   	printContainer(container, e_size);
+	insert_comparisons += insertionCycle(container, e_size);
 	return (insert_comparisons);
 }
 
@@ -292,11 +294,11 @@ template <typename Container>
 static int compareElementsSwap(
 		Container &container,
 		const unsigned int &index,
-		const unsigned int &elementSize)
+		const unsigned int &e_size)
 {
-	const unsigned int comp = index + elementSize;
+	const unsigned int comp = index + e_size;
 	//	We need to compare the last element before the next index because that is already sorted
-	if (container[index + elementSize - 1] > container[comp + elementSize - 1])
+	if (container[index + e_size - 1] > container[comp + e_size - 1])
 		swapElements(container, index, comp);
 	return (1);
 }
@@ -304,15 +306,15 @@ static int compareElementsSwap(
 template <typename Container>
 static unsigned int mergeInsertionSort( Container &container, const unsigned int recursion_level ) {
 	unsigned int comparisons = 0;
-	const unsigned int elementSize = pow(2, recursion_level);
+	const unsigned int e_size = pow(2, recursion_level);
 
-	if (elementSize > container.size())
+	if (e_size > container.size())
 		return (comparisons);
-	for (unsigned int i = 0; i + elementSize <= container.size(); i += elementSize) {
-		comparisons += compareElementsSwap(container, i, elementSize / 2);	// makes and executes comparisons
+	for (unsigned int i = 0; i + e_size <= container.size(); i += e_size) {
+		comparisons += compareElementsSwap(container, i, e_size / 2);	// makes and executes comparisons
 	}
 	printRecursionLevel( recursion_level, "pair sort" );
-   	printContainer(container, elementSize);
+   	printContainer(container, e_size);
 	comparisons += mergeInsertionSort(container, recursion_level + 1);
 	comparisons += insertionStep(container, recursion_level - 1);
 	return (comparisons);
