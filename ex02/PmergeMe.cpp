@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/30 20:50:33 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/30 21:44:24 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,15 +185,18 @@ static Container createPend(Container &main, unsigned int e_size)
 template <typename Container>
 static Container createOdds(Container &main, unsigned int e_size)
 {
-	Container odd;
-	for (int i = 2; (i + 1) * e_size <= main.size(); i++) {
-		moveToContainerFromRange(main, odd, i * e_size, (i + 1) * e_size);
+	Container odds;
+	int i = 0;	// i counts through e_size chunks
+	while (((i + 2) * e_size) < main.size())	// Skips over all the usable b elements
+		i += 2;
+	if ((i * e_size) + e_size <= main.size()) { // is there a usable odd element after pairs
+		moveToContainerFromRange(main, odds, i * e_size, (i + 1) * e_size);
+		std::cout << "Created odd: ";
+		printContainer(odds, e_size);
+		std::cout << "New main: ";
+		printContainer(main, e_size);
 	}
-	std::cout << "Created odd: ";
-	printContainer(odd, e_size);
-	std::cout << "New main: ";
-	printContainer(main, e_size);
-	return (odd);
+	return (odds);
 }
 
 //	just handles the insertion of an element in the existing container
@@ -256,6 +259,7 @@ template <typename Container>
 static unsigned int insertionCycle(Container &main, unsigned int e_size)
 {
 	unsigned int comparisons = 0;
+	unsigned int topinserted = 0;
 	Container odds = createOdds(main, e_size);
 	Container pend = createPend(main, e_size);
 
@@ -264,7 +268,7 @@ static unsigned int insertionCycle(Container &main, unsigned int e_size)
 	{
 		unsigned int currJacobsthal = PmergeMe::genJacobsthal(i);
 		unsigned int prevJacobsthal = PmergeMe::genJacobsthal(i - 1);
-		unsigned int target_index = pow(2, i + 2) * e_size;
+		unsigned int target_area = pow(2, i + 2) * e_size;
 		std::cout << "Inserting between index 0 and " << target_area << ": ";
 		if (target_area > main.size())
 			target_area = main.size();
@@ -272,13 +276,18 @@ static unsigned int insertionCycle(Container &main, unsigned int e_size)
 			break;
 		while (currJacobsthal > prevJacobsthal) {
 			comparisons += binaryInsert(main, pend, 0, target_area, e_size, ((currJacobsthal - 1) * e_size)- e_size);
+			if ((currJacobsthal - 1) * e_size > topinserted)
+				topinserted = (currJacobsthal - 1) * e_size;
 			currJacobsthal--;
 		}
 	}
 	std::cout << "Binary insert in linear order" << std::endl;
-	for (unsigned int i = 0; i + e_size <= pend.size(); i += e_size) {
-		comparisons += binaryInsert(main, pend, 0, main.size(), e_size, i);
+	while (topinserted + e_size <= pend.size()) {
+		topinserted += e_size;
+		comparisons += binaryInsert(main, pend, 0, main.size(), e_size, topinserted);
 	}
+	if (odds.size())
+		comparisons += binaryInsert(main, odds, 0, main.size(), e_size, 0);
 	return (comparisons);
 }
 
