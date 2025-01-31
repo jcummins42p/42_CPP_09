@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/29 13:36:39 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/31 15:40:33 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 int	main( int argc, char *argv[] ) {
 	try {
 		PmergeMe sorter = PmergeMe();
-		sorter.printContainerByString( "jacob" );
+		//sorter.printContainerByString( "jacob" );
 		sorter.parseInput(argc - 1, argv + 1);
 		sorter.mergeInsertionWrapper( "vector" );
 		sorter.mergeInsertionWrapper( "deque" );

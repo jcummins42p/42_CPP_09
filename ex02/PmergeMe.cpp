@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/30 21:44:24 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/31 16:04:52 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,23 +33,30 @@ PmergeMe &PmergeMe::operator=( const PmergeMe& other ) {
 //	destructor
 PmergeMe::~PmergeMe( void ) {}
 
+static void debugPrint( const std::string &message) {
+	if (DB_OUTPUT > DB_NONE)
+		std::cout << message << std::endl;
+}
+
 template <typename Container>
 static bool checkSorted( const Container &container ) {
 	unsigned int previous = container.front();
 	for (typename Container::const_iterator it = container.begin(); it != container.end(); it++) {
 		if (previous > *it) {
-			std::cout << "Container is NOT sorted" << std::endl;
+			debugPrint("Container is NOT sorted");
 			return (false);
 		}
 		previous = *it;
 	}
-	std::cout << "Container is sorted" << std::endl;
+	debugPrint("Container is sorted");
 	return (true);
 }
 
 static void printRecursionLevel( unsigned int recursion_level, std::string stage ) {
-	std::cout << std::endl << "> After Level " << recursion_level
+	if (DB_OUTPUT >= DB_TEXT) {
+		std::cout << std::endl << "> After Level " << recursion_level
 		<< " (" << stage << " - size " << pow(2, recursion_level) << "):" << std::endl;
+	}
 }
 
 template <typename T>
@@ -70,8 +77,10 @@ static void printContainer( const T &container, unsigned int grouping) {
 			std::cout << ")  (" << *it++;
 		else if (grouping && (i % (grouping / 2) == 0))
 			std::cout << " ~ " << *it++;
-		else
+		else if (grouping)
 			std::cout << ", " << *it++;
+		else
+			std::cout << " " << *it++;
 		i++;
 	}
 	if (grouping && i % grouping == 0)
@@ -146,11 +155,9 @@ static void moveToContainerFromRange(
 		unsigned int start,
 		unsigned int end)
 {
-	while (start < end) {
-		dest.push_back(source[start]);
-		source.erase(source.begin() + start);
-		end--;
-	}
+	Container temp(source.begin() + start, source.begin() + end);
+	dest.insert(dest.end(), temp.begin(), temp.end());
+	source.erase(source.begin() + start, source.begin() + end);
 }
 
 template <typename Container>
@@ -191,10 +198,8 @@ static Container createOdds(Container &main, unsigned int e_size)
 		i += 2;
 	if ((i * e_size) + e_size <= main.size()) { // is there a usable odd element after pairs
 		moveToContainerFromRange(main, odds, i * e_size, (i + 1) * e_size);
-		std::cout << "Created odd: ";
+		std::cout << "Created odd element: ";
 		printContainer(odds, e_size);
-		std::cout << "New main: ";
-		printContainer(main, e_size);
 	}
 	return (odds);
 }
@@ -239,17 +244,20 @@ static unsigned int binaryInsert(
 		unsigned int e_size,
 		unsigned int src_i) // we don't yet have a dest - we are finding it
 {
-	unsigned int M = L + (R - L) / 2;
+	unsigned int M = 0;
 
-	M -= M % e_size; // take the lower index that aligns with the start of an element
-	if (L == R) {
-		std::cout << "Inserting element ending " << source[src_i + e_size - 1]
-			<< " before element ending " << target[L + e_size - 1] << std::endl;
+	if (L >= R) {
+		if (DB_OUTPUT >= DB_TEXT) {
+			std::cout << "Inserting element ending " << source[src_i + e_size - 1]
+				<< " before element ending " << target[L + e_size - 1] << std::endl;
+		}
 		insertElement(target, source, L, src_i, e_size);
 		printContainer( target, e_size);
 		return (0);
 	}
-	else if (elementIsLessThan(target, source, M, src_i, e_size))
+	M = L + (R - L) / 2;
+	M -= M % e_size; // take the lower index that aligns with the start of an element
+	if (elementIsLessThan(target, source, M, src_i, e_size))
 		return 1 + binaryInsert(target, source, L, M, e_size, src_i);
 	else
 		return 1 + binaryInsert(target, source, M + e_size, R, e_size, src_i);
@@ -263,31 +271,39 @@ static unsigned int insertionCycle(Container &main, unsigned int e_size)
 	Container odds = createOdds(main, e_size);
 	Container pend = createPend(main, e_size);
 
-	std::cout << "Binary insert in jacobsthal order" << std::endl;
+	std::cout << "\nBinary insert in jacobsthal order" << std::endl;
 	for (unsigned int i = 0; ; i++)
 	{
 		unsigned int currJacobsthal = PmergeMe::genJacobsthal(i);
 		unsigned int prevJacobsthal = PmergeMe::genJacobsthal(i - 1);
-		unsigned int target_area = pow(2, i + 2) * e_size;
-		std::cout << "Inserting between index 0 and " << target_area << ": ";
+		unsigned int target_area = (pow(2, i + 2) - 1) * e_size;
+		std::cout << "Inserting between element 0 and " << target_area / e_size << ": ";
 		if (target_area > main.size())
 			target_area = main.size();
-		if ((currJacobsthal - 1) * e_size >= pend.size())
+		if ((currJacobsthal - 1) * e_size > pend.size()) {
+			std::cout << "Not enough b elements to use jacobsthal #" << currJacobsthal << std::endl;
 			break;
+		}
+		std::cout << "Inserting from element b " << currJacobsthal << std::endl;
 		while (currJacobsthal > prevJacobsthal) {
 			comparisons += binaryInsert(main, pend, 0, target_area, e_size, ((currJacobsthal - 1) * e_size)- e_size);
 			if ((currJacobsthal - 1) * e_size > topinserted)
 				topinserted = (currJacobsthal - 1) * e_size;
 			currJacobsthal--;
 		}
+		std::cout << "Main after insertions: ";
+		printContainer( main, e_size );
 	}
-	std::cout << "Binary insert in linear order" << std::endl;
-	while (topinserted + e_size <= pend.size()) {
+	if (pend.size())
+		std::cout << "Binary insert pend in linear order from element " << topinserted / e_size << std::endl;
+	while (pend.size() && (topinserted + e_size <= pend.size())) {
+		comparisons += binaryInsert(main, pend, 0, main.size() - e_size - (main.size() % e_size), e_size, topinserted);
 		topinserted += e_size;
-		comparisons += binaryInsert(main, pend, 0, main.size(), e_size, topinserted);
 	}
-	if (odds.size())
-		comparisons += binaryInsert(main, odds, 0, main.size(), e_size, 0);
+	if (odds.size()) {
+		std::cout << "Binary insert odd in linear order " << std::endl;
+		comparisons += binaryInsert(main, odds, 0, main.size() - (main.size() % e_size), e_size, 0);
+	}
 	return (comparisons);
 }
 
@@ -298,9 +314,12 @@ static unsigned int insertionStep(Container &container, unsigned int recursion_l
 	unsigned int insert_comparisons = 0;
 	if (e_size > container.size())
 		return (insert_comparisons);
-	printRecursionLevel(recursion_level, "insertion");
+	std::cout << "\nAt recursion level " << recursion_level << ": ";
+	//printRecursionLevel(recursion_level, "insertion");
    	printContainer(container, e_size);
 	insert_comparisons += insertionCycle(container, e_size);
+	std::cout << "After recursion level " << recursion_level << std::endl;
+   	printContainer(container, e_size);
 	return (insert_comparisons);
 }
 
@@ -357,12 +376,10 @@ void PmergeMe::mergeInsertionWrapper( const std::string &select )
 	printContainerByString( select );
 	if (select == "vector") {
 		comparisons = mergeInsertionSort(vector_numbers, 1);
-		//vector_numbers.insert(vector_numbers.end(), 1); // to prove checker works
 		checkSorted(vector_numbers);
 	}
 	else if (select == "deque") {
 		comparisons = mergeInsertionSort(deque_numbers, 1);
-		//deque_numbers.insert(deque_numbers.end(), 1);	// to prove checker works
 		checkSorted(deque_numbers);
 	}
 	else

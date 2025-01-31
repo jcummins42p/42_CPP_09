@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/29 15:30:54 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/31 13:36:54 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,17 @@
 # include <vector>
 # include <deque>
 # include <math.h> //	required for pow()
+
+# ifndef DB_OUTPUT
+#  define DB_OUTPUT 0
+# endif
+
+enum e_debug_level
+{
+	DB_NONE,
+	DB_NUMBERS,
+	DB_TEXT
+};
 
 class	PmergeMe
 {
