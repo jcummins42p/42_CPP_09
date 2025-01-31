@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/27 17:57:12 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/31 16:16:56 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ void RPN::processArgument( const std::string &arg ) {
 	if (toadd > 9 || toadd < -9)
 		throw std::invalid_argument("Single digit numbers only");
 	else if (isdigit(arg[0])) {
-		std::cout << "Adding " << arg << " to numbers stack" << std::endl;
+		//std::cout << "Adding " << arg << " to numbers stack" << std::endl;
 		numbers.push(atol(arg.c_str()));
 	}
 	else if (isValidOperator(arg[0]))
