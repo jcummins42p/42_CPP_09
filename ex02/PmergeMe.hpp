@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/31 13:36:54 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/01/31 17:12:14 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 # include <algorithm>
 # include <cstdlib>
+# include <ctime>
 # include <iostream>
 # include <limits.h>
 # include <sstream>
@@ -44,6 +45,8 @@ class	PmergeMe
 		PmergeMe	&operator=( const PmergeMe &other );
 		~PmergeMe	( void );
 
+		void printOutput( void ) const;
+
 		void printContainerByString( const std::string &select ) const;
 		void parseInput( int argc, char *argv[] );
 		void generateJacobsthalSequence( unsigned int n );
@@ -51,10 +54,20 @@ class	PmergeMe
 
 		static unsigned int genJacobsthal( int n );
 
+		double getTimeToProcessVector( const std::clock_t &start );
+		double getTimeToProcessDeque( const std::clock_t &start );
+
+		unsigned int getContainerSize( const std::string &select ) const;
+		unsigned int getNComparisons( const std::string &select ) const;
 	private:
 		std::vector<unsigned int> vector_numbers;
 		std::deque<unsigned int> deque_numbers;
 
+		double time_to_process_vector;
+		double time_to_process_deque;
+
+		unsigned int n_comparisons_vector;
+		unsigned int n_comparisons_deque;
 		//	store generated jacobsthal sequence
 		std::vector<unsigned long> jacobsthal;
 } ;
