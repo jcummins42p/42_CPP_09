@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/31 17:16:23 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/02/01 15:50:20 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,10 +201,12 @@ static Container createPend(Container &main, unsigned int e_size)
 	for (int i = 2; (i + 1) * e_size <= main.size(); i++) {
 		moveToContainerFromRange(main, pend, i * e_size, (i + 1) * e_size);
 	}
-	//std::cout << "Created pend: ";
-	//printContainer(pend, e_size);
-	//std::cout << "New main: ";
-	//printContainer(main, e_size);
+	if (DB_OUTPUT > 0) {
+		std::cout << "Created pend: ";
+		printContainer(pend, e_size);
+		std::cout << "New main: ";
+		printContainer(main, e_size);
+	}
 	return (pend);
 }
 
@@ -213,13 +215,19 @@ template <typename Container>
 static Container createOdds(Container &main, unsigned int e_size)
 {
 	Container odds;
-	int i = 0;	// i counts through e_size chunks
-	while (((i + 2) * e_size) < main.size())	// Skips over all the usable b elements
-		i += 2;
-	if ((i * e_size) + e_size <= main.size()) { // is there a usable odd element after pairs
-		moveToContainerFromRange(main, odds, i * e_size, (i + 1) * e_size);
-		//std::cout << "Created odd element: ";
-		//printContainer(odds, e_size);
+	int i = e_size;	// i counts through e_size chunks
+	if (e_size == 1 || e_size * 4 >= main.size())
+		return (odds);
+	if (main.size() % (e_size * 2) == 0)
+		return (odds);
+	while ((i + e_size) < main.size())	// Skips over all the usable b elements
+		i += e_size;
+	if (i + e_size <= main.size()) { // is there a usable odd element after pairs
+		moveToContainerFromRange(main, odds, i, i + e_size);
+		if (DB_OUTPUT > 0) {
+			std::cout << "Created odd element: ";
+			printContainer(odds, e_size);
+		}
 	}
 	return (odds);
 }
@@ -267,12 +275,13 @@ static unsigned int binaryInsert(
 	unsigned int M = 0;
 
 	if (L >= R) {
-		if (DB_OUTPUT >= DB_TEXT) {
+		if (DB_OUTPUT > 0) {
 			std::cout << "Inserting element ending " << source[src_i + e_size - 1]
 				<< " before element ending " << target[L + e_size - 1] << std::endl;
 		}
 		insertElement(target, source, L, src_i, e_size);
-		//printContainer( target, e_size);
+		if (DB_OUTPUT > 0)
+			printContainer( target, e_size);
 		return (0);
 	}
 	M = L + (R - L) / 2;
@@ -287,7 +296,9 @@ template <typename Container>
 static unsigned int insertionCycle(Container &main, unsigned int e_size)
 {
 	unsigned int comparisons = 0;
+	unsigned int comps = 0;	// this is a local value to monitor binary insert efficiency
 	unsigned int topinserted = 0;
+	unsigned int target_area = 0;
 	Container odds = createOdds(main, e_size);
 	Container pend = createPend(main, e_size);
 
@@ -296,7 +307,7 @@ static unsigned int insertionCycle(Container &main, unsigned int e_size)
 	{
 		unsigned int currJacobsthal = PmergeMe::genJacobsthal(i);
 		unsigned int prevJacobsthal = PmergeMe::genJacobsthal(i - 1);
-		unsigned int target_area = (pow(2, i + 2) - 1) * e_size;
+		target_area = (pow(2, i + 2) - 1) * e_size;
 		//std::cout << "Inserting between element 0 and " << target_area / e_size << ": ";
 		if (target_area > main.size())
 			target_area = main.size();
@@ -306,23 +317,42 @@ static unsigned int insertionCycle(Container &main, unsigned int e_size)
 		}
 		//std::cout << "Inserting from element b " << currJacobsthal << std::endl;
 		while (currJacobsthal > prevJacobsthal) {
-			comparisons += binaryInsert(main, pend, 0, target_area, e_size, ((currJacobsthal - 1) * e_size)- e_size);
+			comps = binaryInsert(main, pend, 0, target_area, e_size, ((currJacobsthal - 1) * e_size)- e_size);
+			if (DB_OUTPUT > 0) {
+				std::cout << "Insert to size " << target_area / e_size
+					<< " took " << comps << " comparisons, where "
+				   << std::floor(log2(target_area / e_size)) + 1 << " is optimal" << std::endl;
+			}
+			comparisons += comps;
 			if ((currJacobsthal - 1) * e_size > topinserted)
 				topinserted = (currJacobsthal - 1) * e_size;
 			currJacobsthal--;
 		}
 		//std::cout << "Main after insertions: ";
-		//printContainer( main, e_size );
 	}
 	//if (pend.size())
 		//std::cout << "Binary insert pend in linear order from element " << topinserted / e_size << std::endl;
 	while (pend.size() && (topinserted + e_size <= pend.size())) {
-		comparisons += binaryInsert(main, pend, 0, main.size() - e_size - (main.size() % e_size), e_size, topinserted);
+		target_area = main.size() - main.size() % e_size;
+		comps = binaryInsert(main, pend, 0, target_area, e_size, topinserted);
+		if (DB_OUTPUT > 0) {
+			std::cout << "Insert to size " << target_area / e_size
+			   << " took " << comps << " comparisons, where "
+			   << std::floor(log2(target_area / e_size)) + 1 << " is optimal" << std::endl;
+		}
+		comparisons += comps;
 		topinserted += e_size;
 	}
 	if (odds.size()) {
 		//std::cout << "Binary insert odd in linear order " << std::endl;
-		comparisons += binaryInsert(main, odds, 0, main.size() - (main.size() % e_size), e_size, 0);
+		target_area = main.size() - main.size() % e_size;
+		comps = binaryInsert(main, odds, 0, target_area, e_size, 0);
+		if (DB_OUTPUT > 0) {
+			std::cout << "Insert to size " << (main.size() - (main.size() % e_size)) / e_size
+				<< " took " << comps << " comparisons, where "
+				<< std::floor(log2(target_area / e_size)) + 1 << " is optimal" << std::endl;
+		}
+		comparisons += comps;
 	}
 	return (comparisons);
 }

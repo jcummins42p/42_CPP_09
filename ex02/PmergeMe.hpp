@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/31 17:12:14 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/02/01 13:43:37 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <algorithm>
 # include <cstdlib>
 # include <ctime>
+# include <cmath>
 # include <iostream>
 # include <limits.h>
 # include <sstream>
