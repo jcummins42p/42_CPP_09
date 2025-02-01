@@ -6,13 +6,19 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/27 10:49:01 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/02/01 12:09:19 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "BitcoinExchange.hpp"
 
 //	static helper functions
+
+static std::string intToString( int num ) {
+	std::stringstream ss;
+	ss << num;
+	return (ss.str());
+}
 
 static void initTimeStruct( struct tm *input ) {
 	input->tm_year = 0;
@@ -24,7 +30,24 @@ static void initTimeStruct( struct tm *input ) {
 	input->tm_isdst = -1;
 }
 
+static void checkPriceIsValid( std::string price ) {
+	unsigned int decimalcount = 0;
+	if (price[0] == '-')
+		throw std::invalid_argument("Non-positive price => " + price);
+	for (std::string::iterator it = price.begin(); it != price.end(); it++) {
+		if (*it == '.') {
+			if (decimalcount)
+				throw std::invalid_argument("Multiple decimal points in price => " + price);
+			else
+				decimalcount++;
+		}
+		else if (!std::isdigit(*it))
+			throw std::invalid_argument("Non-digit character in price => " + price);
+	}
+}
+
 static t_cents stringToCents( std::string amount ) {
+	checkPriceIsValid( amount );
 	size_t decimalPointIndex = amount.find('.');
 	t_cents	dollars = atol(amount.c_str());
 	t_cents cents = 0;
@@ -44,7 +67,7 @@ static bool yearIsLeap( int year ) {
 	return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
 }
 
-static int daysInMonth( int month, int year ) {
+static int daysInMonth( int days, int month, int year ) {
 	for (int i = 0; i < 12; i++) {
 		if (month == 1) {
 			if (yearIsLeap(year))
@@ -57,21 +80,40 @@ static int daysInMonth( int month, int year ) {
 		else if (shortMonths[i] == month)
 			return (30);
 	}
-	throw std::runtime_error("Invalid month");
+	throw std::runtime_error("Invalid days => " + intToString(days));
+}
+
+std::string reconstructDate( int year, int month, int day ) {
+	return (intToString(year + 1900)
+			+ "-" + intToString(month + 1)
+			+ "-" + intToString(day));
 }
 
 //	Why is month 0-indexed and day is 1-indexed? Weird.
 static void checkDateValidity( int year, int month, int day ) {
 	//std::cout << "Checking " << year << "-" << month << "-" << day << std::endl;
-	if (year < 0)
-		throw std::invalid_argument("Invalid year: ");
-	else if (day < 1 || day > daysInMonth(month, year))
-		throw std::invalid_argument("Invalid day for month");
+	if (year < 0 || month > 12 || day < 1 || day > 31
+			|| day > daysInMonth(day, month, year))
+		throw std::invalid_argument(
+				"Bad input => " + reconstructDate(year, month, day));
+}
+
+static void checkDateIsDigits( std::string date ) {
+	for (std::string::iterator it = date.begin(); it != date.end(); it++) {
+		if (it - date.begin() == 4 || it - date.begin() == 7) {
+			if (*it != '-')
+				throw std::invalid_argument("Non-standard separator in date => " + date);
+			continue;
+		}
+		if (!std::isdigit(*it))
+			throw std::invalid_argument("Non-digit character in date =>" + date);
+	}
 }
 
 static time_t dateStringToTimestamp( std::string date ) {
 	struct tm out;
 	initTimeStruct( &out );
+	checkDateIsDigits(date);
 	int year = atol(date.substr(0, 4).c_str()) - 1900;
 	int month = atol(date.substr(5, 6).c_str()) - 1;
 	int day = atol(date.substr(8, 9).c_str());
@@ -90,7 +132,6 @@ static void parseDataLine( std::string line, CSVdata &data ) {
 	if (!isdigit(line[0]))
 		return ;
 	try {
-		//CSVrecord newdata;
 		if (line[10] != ',') {
 			std::cout << "Error in line " << line_n << ": ";
 			throw std::invalid_argument("Malformed date in CSV file");
@@ -164,10 +205,11 @@ void BitcoinExchange::processInput( std::string line ) const {
 	if (!isdigit(line[0]))
 		return ;
 	time_t	date = dateStringToTimestamp(line.substr(0, 10));
-	int		value = atof(line.substr(13).c_str());
+	t_cents value = stringToCents(line.substr(13));	// value stored in cents
 	if (value < 0)
-		throw (std::invalid_argument("Error: not a positive number"));
-	if (value > 1000)
-		throw (std::invalid_argument("Error: too large a number"));
-	std::cout << printTimestamp(date) << " => " << value << " = " << printDollars(getNearestRecord(date)->second * value) << std::endl;
+		throw (std::invalid_argument("not a positive number"));
+	if (value > 100000)
+		throw (std::invalid_argument("too large a number"));
+	std::cout << printTimestamp(date) << " => " << printDollars(value)
+		<< " " << printDollars((getNearestRecord(date)->second * value) / 100) << std::endl;
 }

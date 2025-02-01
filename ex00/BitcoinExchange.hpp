@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:44:19 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/24 16:28:04 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/02/01 12:09:41 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,13 @@
 # include <ctime>
 # include <cstring>
 # include <string>
+# include <sstream>
 # include <cstdlib>
 # include <bits/stdc++.h>
 
 #define CENTS_IN_DOLLAR 100
 
-typedef unsigned int t_cents;
+typedef unsigned long t_cents;
 //typedef std::pair<time_t, t_cents> CSVrecord;
 typedef std::map<time_t, t_cents> CSVdata;
 

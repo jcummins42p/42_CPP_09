@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/01/19 23:06:42 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/02/01 11:55:24 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int main( int argc, char *argv[] ) {
 			exchange.processInput(line);
 		}
 		catch ( std::exception &e ) {
-			std::cout << e.what() << std::endl;
+			std::cout << "Error: " << e.what() << std::endl;
 		}
 	}
 	return (0);
