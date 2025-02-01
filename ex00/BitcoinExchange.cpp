@@ -6,7 +6,7 @@
 /*   By: jcummins <jcummins@student.42prague.c      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/04 17:43:14 by jcummins          #+#    #+#             */
-/*   Updated: 2025/02/01 12:09:19 by jcummins         ###   ########.fr       */
+/*   Updated: 2025/02/01 16:20:17 by jcummins         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,9 +207,9 @@ void BitcoinExchange::processInput( std::string line ) const {
 	time_t	date = dateStringToTimestamp(line.substr(0, 10));
 	t_cents value = stringToCents(line.substr(13));	// value stored in cents
 	if (value < 0)
-		throw (std::invalid_argument("not a positive number"));
+		throw (std::invalid_argument("not a positive number => " + line.substr(13)));
 	if (value > 100000)
-		throw (std::invalid_argument("too large a number"));
+		throw (std::invalid_argument("too large a number => " + line.substr(13)));
 	std::cout << printTimestamp(date) << " => " << printDollars(value)
 		<< " " << printDollars((getNearestRecord(date)->second * value) / 100) << std::endl;
 }
